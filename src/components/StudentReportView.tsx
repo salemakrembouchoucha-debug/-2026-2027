@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ALL_QUESTIONS } from '../data/scienceCurriculumData';
+import { ALL_QUESTIONS, isQuestionAnswered } from '../data/scienceCurriculumData';
 import { UserAnswerRecord, QuestionItem, StudentProfile } from '../types/quiz';
 import {
   Trophy,
@@ -39,14 +39,15 @@ export const StudentReportView: React.FC<StudentReportProps> = ({
   const mcqQuestions = ALL_QUESTIONS.filter((q) => q.section === 'mcq');
   const essayQuestions = ALL_QUESTIONS.filter((q) => q.section === 'essay');
 
-  const totalQuestions = ALL_QUESTIONS.length;
-  const totalMCQs = mcqQuestions.length;
+  const totalQuestions = ALL_QUESTIONS.length; // 60
+  const totalMCQs = mcqQuestions.length; // 47
+  const totalEssays = essayQuestions.length; // 13
 
   let answeredMCQs = 0;
   let correctMCQs = 0;
   let incorrectMCQs = 0;
 
-  // Breakdown per axis
+  // Breakdown per axis for MCQs
   let axis1MCQTotal = 0;
   let axis1MCQAnswered = 0;
   let axis1MCQCorrect = 0;
@@ -85,6 +86,20 @@ export const StudentReportView: React.FC<StudentReportProps> = ({
     }
   });
 
+  // Overall totals using isQuestionAnswered
+  const totalAnswered = ALL_QUESTIONS.filter((q) => isQuestionAnswered(answers[q.id])).length;
+  const axis1Questions = ALL_QUESTIONS.filter((q) => q.unitId === 1);
+  const axis2Questions = ALL_QUESTIONS.filter((q) => q.unitId === 2);
+
+  const axis1TotalAnswered = axis1Questions.filter((q) => isQuestionAnswered(answers[q.id])).length;
+  const axis2TotalAnswered = axis2Questions.filter((q) => isQuestionAnswered(answers[q.id])).length;
+
+  const axis1Essays = essayQuestions.filter((q) => q.unitId === 1);
+  const axis2Essays = essayQuestions.filter((q) => q.unitId === 2);
+
+  const axis1EssayAnswered = axis1Essays.filter((q) => isQuestionAnswered(answers[q.id])).length;
+  const axis2EssayAnswered = axis2Essays.filter((q) => isQuestionAnswered(answers[q.id])).length;
+
   const unattemptedMCQs = totalMCQs - answeredMCQs;
   const mcqAccuracy = answeredMCQs > 0 ? Math.round((correctMCQs / answeredMCQs) * 100) : 0;
 
@@ -94,10 +109,7 @@ export const StudentReportView: React.FC<StudentReportProps> = ({
   // Self-evaluated essay counts
   const selfEvaluatedCorrect = essayQuestions.filter((q) => answers[q.id]?.isSelfEvaluatedCorrect === true).length;
   const selfEvaluatedNeedsReview = essayQuestions.filter((q) => answers[q.id]?.isSelfEvaluatedCorrect === false).length;
-  const essayAnsweredCount = essayQuestions.filter((q) => {
-    const a = answers[q.id];
-    return a && a.essayAnswers && Object.keys(a.essayAnswers).length > 0;
-  }).length;
+  const essayAnsweredCount = essayQuestions.filter((q) => isQuestionAnswered(answers[q.id])).length;
 
   useEffect(() => {
     if (correctMCQs > 15) {
@@ -180,21 +192,24 @@ export const StudentReportView: React.FC<StudentReportProps> = ({
                 <h4 className="font-extrabold text-sm text-slate-900">الطبيعة الجسيمية للمادة</h4>
               </div>
             </div>
-            <span className="text-xl font-black text-[#8A1538]">{axis1Accuracy}%</span>
+            <div className="text-left">
+              <span className="text-xs font-bold text-slate-500 block">الإنجاز الكلي للمحور</span>
+              <span className="text-lg font-black text-[#8A1538]">{axis1TotalAnswered} / 30</span>
+            </div>
           </div>
 
           <div className="grid grid-cols-3 gap-2 text-center text-xs">
             <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-              <span className="text-slate-500 block text-[11px]">الأسئلة المجابة</span>
-              <span className="font-black text-slate-800 text-sm">{axis1MCQAnswered} / {axis1MCQTotal}</span>
+              <span className="text-slate-500 block text-[11px]">موضوعي مجاب</span>
+              <span className="font-black text-slate-800 text-sm">{axis1MCQAnswered} / 26</span>
             </div>
             <div className="bg-emerald-50 p-2.5 rounded-xl border border-emerald-100">
-              <span className="text-emerald-700 block text-[11px]">صحيحة</span>
+              <span className="text-emerald-700 block text-[11px]">موضوعي صحيح</span>
               <span className="font-black text-emerald-800 text-sm">{axis1MCQCorrect}</span>
             </div>
-            <div className="bg-rose-50 p-2.5 rounded-xl border border-rose-100">
-              <span className="text-rose-700 block text-[11px]">تحتاج تصحيح</span>
-              <span className="font-black text-rose-800 text-sm">{axis1MCQAnswered - axis1MCQCorrect}</span>
+            <div className="bg-blue-50 p-2.5 rounded-xl border border-blue-100">
+              <span className="text-blue-700 block text-[11px]">مقالي وتركيبي</span>
+              <span className="font-black text-blue-900 text-sm">{axis1EssayAnswered} / 4</span>
             </div>
           </div>
         </div>
@@ -211,21 +226,24 @@ export const StudentReportView: React.FC<StudentReportProps> = ({
                 <h4 className="font-extrabold text-sm text-slate-900">الخلايا الحية والمجهر الضوئي</h4>
               </div>
             </div>
-            <span className="text-xl font-black text-emerald-700">{axis2Accuracy}%</span>
+            <div className="text-left">
+              <span className="text-xs font-bold text-slate-500 block">الإنجاز الكلي للمحور</span>
+              <span className="text-lg font-black text-emerald-700">{axis2TotalAnswered} / 30</span>
+            </div>
           </div>
 
           <div className="grid grid-cols-3 gap-2 text-center text-xs">
             <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-              <span className="text-slate-500 block text-[11px]">الأسئلة المجابة</span>
-              <span className="font-black text-slate-800 text-sm">{axis2MCQAnswered} / {axis2MCQTotal}</span>
+              <span className="text-slate-500 block text-[11px]">موضوعي مجاب</span>
+              <span className="font-black text-slate-800 text-sm">{axis2MCQAnswered} / 21</span>
             </div>
             <div className="bg-emerald-50 p-2.5 rounded-xl border border-emerald-100">
-              <span className="text-emerald-700 block text-[11px]">صحيحة</span>
+              <span className="text-emerald-700 block text-[11px]">موضوعي صحيح</span>
               <span className="font-black text-emerald-800 text-sm">{axis2MCQCorrect}</span>
             </div>
-            <div className="bg-rose-50 p-2.5 rounded-xl border border-rose-100">
-              <span className="text-rose-700 block text-[11px]">تحتاج تصحيح</span>
-              <span className="font-black text-rose-800 text-sm">{axis2MCQAnswered - axis2MCQCorrect}</span>
+            <div className="bg-blue-50 p-2.5 rounded-xl border border-blue-100">
+              <span className="text-blue-700 block text-[11px]">مقالي وتركيبي</span>
+              <span className="font-black text-blue-900 text-sm">{axis2EssayAnswered} / 9</span>
             </div>
           </div>
         </div>
@@ -234,9 +252,9 @@ export const StudentReportView: React.FC<StudentReportProps> = ({
       {/* KPI Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs text-center space-y-1">
-          <div className="text-2xl sm:text-3xl font-black text-slate-800">{totalQuestions}</div>
-          <div className="text-xs font-bold text-slate-500">إجمالي الأسئلة في الملزمة</div>
-          <div className="text-[11px] text-slate-400">47 موضوعي + 13 مقالي وتركيبي</div>
+          <div className="text-2xl sm:text-3xl font-black text-slate-800">{totalAnswered} / {totalQuestions}</div>
+          <div className="text-xs font-bold text-slate-500">إجمالي الأسئلة المنجزة</div>
+          <div className="text-[11px] text-slate-400">({answeredMCQs} موضوعي + {essayAnsweredCount} مقالي)</div>
         </div>
 
         <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs text-center space-y-1">
@@ -264,7 +282,7 @@ export const StudentReportView: React.FC<StudentReportProps> = ({
           <div className="flex items-center gap-2">
             <BookOpen className="w-5 h-5 text-[#8A1538]" />
             <h4 className="font-black text-slate-800 text-sm sm:text-base">
-              حالة الأسئلة المقالية والتركيبية (التقييم الذاتي):
+              حالة الأسئلة المقالية والتركيبية (تم إنجاز {essayAnsweredCount} من 13 سؤالاً):
             </h4>
           </div>
           <span className="text-xs text-slate-500 font-bold">13 سؤالاً مقالياً بإجمالي 69 فرعاً</span>

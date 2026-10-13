@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ALL_QUESTIONS, UNITS_INFO, SUB_TOPICS_INFO, getSubTopicIdForQuestion } from './data/scienceCurriculumData';
+import { ALL_QUESTIONS, UNITS_INFO, SUB_TOPICS_INFO, getSubTopicIdForQuestion, isQuestionAnswered } from './data/scienceCurriculumData';
 import { UserAnswerRecord, StudentProfile, AnswerVisibilityMode } from './types/quiz';
 import { OfficialHeader } from './components/OfficialHeader';
 import { InteractiveQuestionCard } from './components/InteractiveQuestionCard';
@@ -143,35 +143,24 @@ export default function App() {
 
   // Completion calculation for Axis 1, Axis 2 and Overall
   const totalAllQuestions = ALL_QUESTIONS.length; // 60
-  const answeredCount = Object.keys(answers).filter((k) => {
-    const rec = answers[k];
-    return rec.selectedOption || (rec.essayAnswers && Object.keys(rec.essayAnswers).length > 0);
-  }).length;
+  const answeredCount = ALL_QUESTIONS.filter((q) => isQuestionAnswered(answers[q.id])).length;
   const progressPercent = Math.round((answeredCount / totalAllQuestions) * 100);
 
   // Axis 1 stats (30 questions)
   const axis1Questions = ALL_QUESTIONS.filter((q) => q.unitId === 1);
-  const axis1Answered = axis1Questions.filter((q) => {
-    const rec = answers[q.id];
-    return rec && (rec.selectedOption || (rec.essayAnswers && Object.keys(rec.essayAnswers).length > 0));
-  }).length;
+  const axis1Answered = axis1Questions.filter((q) => isQuestionAnswered(answers[q.id])).length;
   const axis1Percent = Math.round((axis1Answered / axis1Questions.length) * 100);
 
   // Axis 2 stats (30 questions)
   const axis2Questions = ALL_QUESTIONS.filter((q) => q.unitId === 2);
-  const axis2Answered = axis2Questions.filter((q) => {
-    const rec = answers[q.id];
-    return rec && (rec.selectedOption || (rec.essayAnswers && Object.keys(rec.essayAnswers).length > 0));
-  }).length;
+  const axis2Answered = axis2Questions.filter((q) => isQuestionAnswered(answers[q.id])).length;
   const axis2Percent = Math.round((axis2Answered / axis2Questions.length) * 100);
 
   // MCQs metrics for certificate
   const mcqQuestions = ALL_QUESTIONS.filter((q) => q.section === 'mcq');
   const essayQuestions = ALL_QUESTIONS.filter((q) => q.section === 'essay');
   const mcqCorrectCount = mcqQuestions.filter((q) => answers[q.id]?.selectedOption === q.correctOption).length;
-  const essayCompletedCount = essayQuestions.filter(
-    (q) => answers[q.id]?.essayAnswers && Object.keys(answers[q.id].essayAnswers!).length > 0
-  ).length;
+  const essayCompletedCount = essayQuestions.filter((q) => isQuestionAnswered(answers[q.id])).length;
 
   // Active Axis Title for display
   const currentAxisTitle =
@@ -645,8 +634,7 @@ export default function App() {
                 <div className="grid grid-cols-6 sm:grid-cols-10 md:grid-cols-12 gap-2 max-h-64 overflow-y-auto p-1">
                   {filteredQuestions.map((q, idx) => {
                     const ans = answers[q.id];
-                    const isAnswered =
-                      ans && (ans.selectedOption || (ans.essayAnswers && Object.keys(ans.essayAnswers).length > 0));
+                    const isAnswered = isQuestionAnswered(ans);
                     const isCurrent = idx === currentQuestionIndex;
 
                     return (

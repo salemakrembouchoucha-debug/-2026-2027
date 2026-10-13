@@ -1,4 +1,4 @@
-import { QuestionItem, UnitInfo, SubTopicInfo } from '../types/quiz';
+import { QuestionItem, UnitInfo, SubTopicInfo, UserAnswerRecord } from '../types/quiz';
 
 export const UNITS_INFO: UnitInfo[] = [
   {
@@ -110,6 +110,27 @@ export function getSubTopicIdForQuestion(q: QuestionItem): string {
     if (q.originalNumber === 4 || q.originalNumber === 7) return 'u2-osmosis';
     return 'u2-specialized';
   }
+}
+
+export function isQuestionAnswered(rec?: UserAnswerRecord): boolean {
+  if (!rec) return false;
+  if (rec.selectedOption) return true;
+  if (rec.essayAnswers) {
+    const values = Object.values(rec.essayAnswers);
+    if (values.some((txt) => typeof txt === 'string' && txt.trim().length > 0)) {
+      return true;
+    }
+  }
+  if (rec.tableAnswers && Object.keys(rec.tableAnswers).length > 0) {
+    return true;
+  }
+  if (rec.dragDropAnswers && Object.keys(rec.dragDropAnswers).length > 0) {
+    return true;
+  }
+  if (rec.isSelfEvaluatedCorrect !== undefined) {
+    return true;
+  }
+  return false;
 }
 
 export const ALL_QUESTIONS: QuestionItem[] = [
