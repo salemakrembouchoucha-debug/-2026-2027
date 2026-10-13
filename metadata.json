@@ -1,0 +1,6 @@
+{
+  "name": "مراجعة العلوم للصف السابع - قطر",
+  "description": "المراجعة التفاعلية والورقية لمادة العلوم للصف السابع وفق المنهج القطري - مدرسة الريان الخاصة بإشراف قسم العلوم",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
